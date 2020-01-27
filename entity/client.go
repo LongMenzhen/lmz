@@ -14,7 +14,7 @@ const (
 	writeWait      = 10 * time.Second
 	pongWait       = 6 * time.Second
 	pingPeriod     = (pongWait * 9) / 10
-	maxMessageSize = 512
+	maxMessageSize = 1024
 )
 
 var upgrader = websocket.Upgrader{
@@ -37,6 +37,7 @@ type Client struct {
 	Room *Room           // 客户端所属房间
 	Conn *websocket.Conn // 客户端连接
 	Send chan []byte     // 待发送给客户端的内容
+	Done chan bool       // 是否连接已结束
 }
 
 // ReadMessage 读消息
@@ -75,6 +76,8 @@ func (c *Client) WriteMessage() {
 
 	for {
 		select {
+		case <-c.Done:
+			return
 		case message, ok := <-c.Send:
 			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
@@ -86,9 +89,7 @@ func (c *Client) WriteMessage() {
 			if nil != err {
 				return
 			}
-
 			w.Write(message)
-
 			if err := w.Close(); nil != err {
 				return
 			}
@@ -104,21 +105,29 @@ func (c *Client) WriteMessage() {
 
 // ServeWs 提供websocket服务
 func ServeWs(w http.ResponseWriter, r *http.Request) {
-	hub := NewHub()
+	hub := AttachHub()
 	rid := r.URL.Query().Get("room_id")
 	if "" == rid {
-		panic("没有指定房间id")
+		http.Error(w, "请指定连接房间", 403)
+		return
 	}
 
 	roomID, _ := strconv.Atoi(rid)
 	room := hub.RoomByID(int32(roomID))
 
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if nil != err {
-		panic("升级websocket协议失败" + err.Error())
+	// 连接房间不存在
+	if nil == room {
+		http.Error(w, "连接房间不存在", 422)
+		return
 	}
 
-	client := &Client{room, conn, make(chan []byte, 512)}
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if nil != err {
+		http.Error(w, "升级websocket协议失败", 403)
+		return
+	}
+
+	client := &Client{Room: room, Conn: conn, Send: make(chan []byte, 512), Done: make(chan bool)}
 	room.AddClient(client)
 
 	go client.WriteMessage()
