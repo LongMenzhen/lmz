@@ -6,19 +6,19 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/cyrnicolase/lmz/entity"
+	"github.com/cyrnicolase/lmz/engine"
 )
 
 func main() {
-	hub := entity.AttachHub()
+	hub := engine.AttachHub()
 	hub.Run()
-	room := entity.NewRoom()
-	room1 := entity.NewRoom()
-	hub.AddRoom(room)
-	hub.AddRoom(room1)
+	group := engine.NewGroup()
+	group1 := engine.NewGroup()
+	hub.AddGroup(group)
+	hub.AddGroup(group1)
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		entity.ServeWs(w, r)
+		engine.ServeWs(w, r)
 	})
 
 	http.HandleFunc("/room", func(w http.ResponseWriter, r *http.Request) {
@@ -32,9 +32,9 @@ func main() {
 
 // BuildRoom 创建房间，并注册房间的Hub
 func BuildRoom(w http.ResponseWriter, r *http.Request) {
-	hub := entity.AttachHub()
+	hub := engine.AttachHub()
 	if "GET" == r.Method {
-		rooms := hub.Rooms
+		rooms := hub.Groups
 		i, roomIDs := 0, make([]int32, len(rooms))
 		for roomID := range rooms {
 			roomIDs[i] = roomID
@@ -47,7 +47,7 @@ func BuildRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newRoom := entity.NewRoom()
+	newRoom := engine.NewGroup()
 	hub.Register <- newRoom
 
 	w.WriteHeader(http.StatusCreated)

@@ -1,4 +1,4 @@
-package entity
+package engine
 
 import (
 	"bytes"
@@ -34,16 +34,16 @@ var (
 // 这里设计是1个客户端属于一个房间
 // 后续可以升级为 N 对 M  的设计
 type Client struct {
-	Room *Room           // 客户端所属房间
-	Conn *websocket.Conn // 客户端连接
-	Send chan []byte     // 待发送给客户端的内容
-	Done chan bool       // 是否连接已结束
+	Group *Group          // 客户端所属房间
+	Conn  *websocket.Conn // 客户端连接
+	Send  chan []byte     // 待发送给客户端的内容
+	Done  chan bool       // 是否连接已结束
 }
 
 // ReadMessage 读消息
 func (c *Client) ReadMessage() {
 	defer func() {
-		c.Room.RemoveClient(c)
+		c.Group.RemoveClient(c)
 		c.Conn.Close()
 	}()
 
@@ -62,7 +62,7 @@ func (c *Client) ReadMessage() {
 		}
 
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.Room.Broadcast <- message
+		c.Group.Broadcast <- message
 	}
 }
 
@@ -106,19 +106,22 @@ func (c *Client) WriteMessage() {
 // ServeWs 提供websocket服务
 func ServeWs(w http.ResponseWriter, r *http.Request) {
 	hub := AttachHub()
-	rid := r.URL.Query().Get("room_id")
-	if "" == rid {
-		http.Error(w, "请指定连接房间", 403)
-		return
+
+	gid := r.URL.Query().Get("group_id")
+	if "" == gid {
+		panic("请指定连接组")
+		// http.Error(w, "请指定连接房间", 403)
+		// return
 	}
 
-	roomID, _ := strconv.Atoi(rid)
-	room := hub.RoomByID(int32(roomID))
+	groupID, _ := strconv.Atoi(gid)
+	group := hub.GroupByID(int32(groupID))
 
 	// 连接房间不存在
-	if nil == room {
-		http.Error(w, "连接房间不存在", 422)
-		return
+	if nil == group {
+		panic("连接组不存在")
+		// http.Error(w, "连接房间不存在", 422)
+		// return
 	}
 
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -126,9 +129,8 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "升级websocket协议失败", 403)
 		return
 	}
-
-	client := &Client{Room: room, Conn: conn, Send: make(chan []byte, 512), Done: make(chan bool)}
-	room.AddClient(client)
+	client := &Client{Group: group, Conn: conn, Send: make(chan []byte, 512), Done: make(chan bool)}
+	group.AddClient(client)
 
 	go client.WriteMessage()
 	go client.ReadMessage()
