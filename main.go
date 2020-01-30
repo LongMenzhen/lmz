@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -18,6 +19,13 @@ func main() {
 	hub.AddGroup(group1)
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		engine.Registe("somebody", func(ctx *engine.Context) {
+			fmt.Println("--------------")
+			fmt.Println(ctx.Request.Body, ctx.Request.Event)
+			ctx.String("hello world")
+			fmt.Println("abc")
+		})
+
 		engine.ServeWs(w, r)
 	})
 

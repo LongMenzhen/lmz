@@ -1,7 +1,7 @@
 package engine
 
 import (
-	"bytes"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -55,14 +55,35 @@ func (c *Client) ReadMessage() {
 	})
 
 	for {
-		_, message, err := c.Conn.ReadMessage()
+		_, data, err := c.Conn.ReadMessage()
 		if nil != err {
 			log.Println("读取客户端信息失败", err.Error())
 			return
 		}
 
-		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.Group.Broadcast <- message
+		message, err := NewMessage(data)
+		if nil != err {
+			log.Println("解析上行数据Json格式失败" + err.Error())
+			continue
+		}
+		ctx := NewContext(*message)
+
+		go func(ctx *Context) {
+			for _, action := range Actions {
+				if action.Event == message.Event {
+					fmt.Println("0000000000")
+					action.F(ctx)
+					fmt.Println("333333")
+					break
+				}
+			}
+		}(ctx)
+
+		fmt.Println("1111111111")
+		result := <-ctx.Response
+		fmt.Println(string(result))
+		// data = bytes.TrimSpace(bytes.Replace(data, newline, space, -1))
+		c.Group.Broadcast <- result
 	}
 }
 
