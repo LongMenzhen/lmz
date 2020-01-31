@@ -9,8 +9,8 @@ type Context struct {
 }
 
 // NewContext 新生成Context结构体
-func NewContext(msg Message) *Context {
-	return &Context{
+func NewContext(msg Message) Context {
+	return Context{
 		Request:  msg,
 		Response: make(chan []byte),
 	}

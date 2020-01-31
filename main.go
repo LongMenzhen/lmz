@@ -2,12 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/cyrnicolase/lmz/engine"
+	_ "github.com/cyrnicolase/lmz/route"
 )
 
 func main() {
@@ -19,18 +19,11 @@ func main() {
 	hub.AddGroup(group1)
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		engine.Registe("somebody", func(ctx *engine.Context) {
-			fmt.Println("--------------")
-			fmt.Println(ctx.Request.Body, ctx.Request.Event)
-			ctx.String("hello world")
-			fmt.Println("abc")
-		})
-
 		engine.ServeWs(w, r)
 	})
 
 	http.HandleFunc("/room", func(w http.ResponseWriter, r *http.Request) {
-		BuildRoom(w, r)
+		BuildGroup(w, r)
 	})
 
 	if err := http.ListenAndServe(":8080", nil); nil != err {
@@ -38,18 +31,18 @@ func main() {
 	}
 }
 
-// BuildRoom 创建房间，并注册房间的Hub
-func BuildRoom(w http.ResponseWriter, r *http.Request) {
+// BuildGroup 创建房间，并注册房间的Hub
+func BuildGroup(w http.ResponseWriter, r *http.Request) {
 	hub := engine.AttachHub()
 	if "GET" == r.Method {
-		rooms := hub.Groups
-		i, roomIDs := 0, make([]int32, len(rooms))
-		for roomID := range rooms {
-			roomIDs[i] = roomID
+		groups := hub.Groups
+		i, groupIDs := 0, make([]int32, len(groups))
+		for roomID := range groups {
+			groupIDs[i] = roomID
 			i++
 		}
 
-		data, _ := json.Marshal(roomIDs)
+		data, _ := json.Marshal(groupIDs)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(data))
 		return

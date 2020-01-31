@@ -1,7 +1,7 @@
 package engine
 
 // HandlerFunc 执行函数
-type HandlerFunc func(ctx *Context)
+type HandlerFunc func(ctx Context)
 
 // Action 操作
 type Action struct {

@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -63,26 +62,21 @@ func (c *Client) ReadMessage() {
 
 		message, err := NewMessage(data)
 		if nil != err {
-			log.Println("解析上行数据Json格式失败" + err.Error())
+			log.Println("客户端上行原始数据JSON格式反序列化失败: " + err.Error())
 			continue
 		}
 		ctx := NewContext(*message)
 
-		go func(ctx *Context) {
+		go func(ctx Context) {
 			for _, action := range Actions {
 				if action.Event == message.Event {
-					fmt.Println("0000000000")
 					action.F(ctx)
-					fmt.Println("333333")
 					break
 				}
 			}
 		}(ctx)
 
-		fmt.Println("1111111111")
 		result := <-ctx.Response
-		fmt.Println(string(result))
-		// data = bytes.TrimSpace(bytes.Replace(data, newline, space, -1))
 		c.Group.Broadcast <- result
 	}
 }
