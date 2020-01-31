@@ -24,11 +24,6 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-var (
-	newline = []byte{'\n'}
-	space   = []byte{' '}
-)
-
 // Client 服务端注册客户端结构体
 // 这里设计是1个客户端属于一个房间
 // 后续可以升级为 N 对 M  的设计
@@ -65,8 +60,8 @@ func (c *Client) ReadMessage() {
 			log.Println("客户端上行原始数据JSON格式反序列化失败: " + err.Error())
 			continue
 		}
-		ctx := NewContext(*message)
 
+		ctx := NewContext(*message)
 		go func(ctx Context) {
 			for _, action := range Actions {
 				if action.Event == message.Event {
@@ -125,8 +120,6 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 	gid := r.URL.Query().Get("group_id")
 	if "" == gid {
 		panic("请指定连接组")
-		// http.Error(w, "请指定连接房间", 403)
-		// return
 	}
 
 	groupID, _ := strconv.Atoi(gid)
@@ -135,8 +128,6 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 	// 连接房间不存在
 	if nil == group {
 		panic("连接组不存在")
-		// http.Error(w, "连接房间不存在", 422)
-		// return
 	}
 
 	conn, err := upgrader.Upgrade(w, r, nil)

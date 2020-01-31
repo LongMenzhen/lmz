@@ -52,5 +52,5 @@ func BuildGroup(w http.ResponseWriter, r *http.Request) {
 	hub.Register <- newRoom
 
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("房间创建完成: " + strconv.Itoa(int(newRoom.ID))))
+	w.Write([]byte("websocket 组创建完成: " + strconv.Itoa(int(newRoom.ID))))
 }

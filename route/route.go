@@ -8,4 +8,5 @@ import (
 func init() {
 	engine.Registe("somebody", app.SomebodyAction)
 	engine.Registe("welcome", app.WelcomeAction)
+	engine.Registe("ping", app.PingAction)
 }
