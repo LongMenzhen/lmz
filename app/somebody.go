@@ -2,8 +2,10 @@ package app
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/cyrnicolase/lmz/engine"
+	"github.com/cyrnicolase/lmz/model"
 )
 
 // SomebodyAction 某人说
@@ -17,6 +19,9 @@ func SomebodyAction(ctx engine.Context) {
 		ctx.String("格式化上行数据失败")
 		return
 	}
+
+	redis := model.Redis()
+	redis.Set("hello", request.Name, 60*time.Second)
 
 	ctx.String("hello: " + request.Name)
 }
