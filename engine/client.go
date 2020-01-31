@@ -61,18 +61,26 @@ func (c *Client) ReadMessage() {
 			continue
 		}
 
+		done := make(chan bool, 1)
 		ctx := NewContext(*message)
 		go func(ctx Context) {
 			for _, action := range Actions {
 				if action.Event == message.Event {
 					action.F(ctx)
+					done <- true
 					break
 				}
 			}
 		}(ctx)
 
-		result := <-ctx.Response
-		c.Group.Broadcast <- result
+		// 处理F 没有返回数据的情况
+		select {
+		case <-done:
+			close(ctx.Response)
+		case result := <-ctx.Response:
+			c.Group.Broadcast <- result
+			close(done)
+		}
 	}
 }
 
