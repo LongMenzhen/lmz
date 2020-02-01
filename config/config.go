@@ -11,12 +11,17 @@ var Config Setting
 
 // Setting 配置结构体
 type Setting struct {
-	Redis RedisSetting `yaml:"redis"`
+	HTTP  httpSetting  `yaml:"http"`
+	Redis redisSetting `yaml:"redis"`
 }
 
-// RedisSetting Redis配置
-type RedisSetting struct {
-	Host string `yaml:"hose"`
+type httpSetting struct {
+	Addr string `yaml:"addr"`
+}
+
+// redisSetting Redis配置
+type redisSetting struct {
+	Host string `yaml:"host"`
 	Port int    `yaml:"port"`
 }
 
@@ -25,7 +30,7 @@ func init() {
 }
 
 func parse() {
-	openFile, err := os.OpenFile("./config/config.yml", os.O_RDWR, 0644)
+	openFile, err := os.OpenFile("./config/config.yml", os.O_RDONLY, 0644)
 	source, err := ioutil.ReadAll(openFile)
 	if nil != err {
 		panic("配置文件读取失败: " + err.Error())

@@ -3,7 +3,6 @@ package engine
 import (
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -16,7 +15,8 @@ const (
 	maxMessageSize = 1024
 )
 
-var upgrader = websocket.Upgrader{
+// Upgrader 升级
+var Upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
@@ -122,30 +122,30 @@ func (c *Client) WriteMessage() {
 }
 
 // ServeWs 提供websocket服务
-func ServeWs(w http.ResponseWriter, r *http.Request) {
-	hub := AttachHub()
+// func ServeWs(w http.ResponseWriter, r *http.Request) {
+// 	hub := AttachHub()
 
-	gid := r.URL.Query().Get("group_id")
-	if "" == gid {
-		panic("请指定连接组")
-	}
+// 	gid := r.URL.Query().Get("group_id")
+// 	if "" == gid {
+// 		panic("请指定连接组")
+// 	}
 
-	groupID, _ := strconv.Atoi(gid)
-	group := hub.GroupByID(int32(groupID))
+// 	groupID, _ := strconv.Atoi(gid)
+// 	group := hub.GroupByID(int32(groupID))
 
-	// 连接房间不存在
-	if nil == group {
-		panic("连接组不存在")
-	}
+// 	// 连接房间不存在
+// 	if nil == group {
+// 		panic("连接组不存在")
+// 	}
 
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if nil != err {
-		http.Error(w, "升级websocket协议失败", 403)
-		return
-	}
-	client := &Client{Group: group, Conn: conn, Send: make(chan []byte, 512), Done: make(chan bool)}
-	group.AddClient(client)
+// 	conn, err := Upgrader.Upgrade(w, r, nil)
+// 	if nil != err {
+// 		http.Error(w, "升级websocket协议失败", 403)
+// 		return
+// 	}
+// 	client := &Client{Group: group, Conn: conn, Send: make(chan []byte, 512), Done: make(chan bool)}
+// 	group.AddClient(client)
 
-	go client.WriteMessage()
-	go client.ReadMessage()
-}
+// 	go client.WriteMessage()
+// 	go client.ReadMessage()
+// }

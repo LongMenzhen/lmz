@@ -1,4 +1,4 @@
-package app
+package ws
 
 import "github.com/cyrnicolase/lmz/engine"
 
