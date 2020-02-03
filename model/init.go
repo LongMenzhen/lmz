@@ -1,6 +1,7 @@
 package model
 
 import (
+	"log"
 	"strconv"
 
 	"github.com/cyrnicolase/lmz/config"
@@ -14,6 +15,10 @@ func init() {
 	redis = rds.NewClient(&rds.Options{
 		Addr: config.Host + ":" + strconv.Itoa(config.Port),
 	})
+
+	if _, err := redis.Ping().Result(); nil != err {
+		log.Println("redis连接失败" + err.Error())
+	}
 }
 
 // Redis 返回redis客户端

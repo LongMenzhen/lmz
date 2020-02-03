@@ -9,13 +9,15 @@ import (
 // 规定客户端与服务端交互的消息体格式
 // {
 //     event:(string),
+// 	   group_id:(int),
 //     body: {
 //
 //     }
 // }
 type Message struct {
-	Event string
-	Body  json.RawMessage
+	Event   string          `json:"event"`
+	GroupID int32           `json:"group_id"`
+	Body    json.RawMessage `json:"body"`
 }
 
 // NewMessage 根据给定字节流反序列化为Message结构体
@@ -28,12 +30,4 @@ func NewMessage(src []byte) (*Message, error) {
 	}
 
 	return &message, nil
-}
-
-// NewPingMessage 创建Ping消息
-func NewPingMessage() *Message {
-	return &Message{
-		Event: "ping",
-		Body:  json.RawMessage{},
-	}
 }

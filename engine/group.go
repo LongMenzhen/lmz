@@ -1,5 +1,7 @@
 package engine
 
+import "log"
+
 var groupID int32 = 0
 
 // Group 聊天房间
@@ -50,6 +52,7 @@ func (r *Group) Run() {
 			r.KillClients()
 			return
 		case message := <-r.Broadcast:
+			log.Println("output message:" + string(message))
 			for client := range r.Clients {
 				client.Send <- message
 			}

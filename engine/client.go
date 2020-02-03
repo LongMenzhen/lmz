@@ -28,16 +28,18 @@ var Upgrader = websocket.Upgrader{
 // 这里设计是1个客户端属于一个房间
 // 后续可以升级为 N 对 M  的设计
 type Client struct {
-	Group *Group          // 客户端所属房间
-	Conn  *websocket.Conn // 客户端连接
-	Send  chan []byte     // 待发送给客户端的内容
-	Done  chan bool       // 是否连接已结束
+	Groups map[*Group]bool // 客户端所属房间
+	Conn   *websocket.Conn // 客户端连接
+	Send   chan []byte     // 待发送给客户端的内容
+	Done   chan bool       // 是否连接已结束
 }
 
 // ReadMessage 读消息
 func (c *Client) ReadMessage() {
 	defer func() {
-		c.Group.RemoveClient(c)
+		for group := range c.Groups {
+			group.RemoveClient(c)
+		}
 		c.Conn.Close()
 	}()
 
@@ -62,7 +64,7 @@ func (c *Client) ReadMessage() {
 		}
 
 		done := make(chan bool, 1)
-		ctx := NewContext(*message)
+		ctx := NewContext(*message, c)
 		go func(ctx Context) {
 			for _, action := range Actions {
 				if action.Event == message.Event {
@@ -76,9 +78,11 @@ func (c *Client) ReadMessage() {
 		// 处理F 没有返回数据的情况
 		select {
 		case <-done:
+			log.Println("<-done")
 			close(ctx.Response)
 		case result := <-ctx.Response:
-			c.Group.Broadcast <- result
+			log.Println("<-result")
+			ctx.Group.Broadcast <- result
 			close(done)
 		}
 	}
@@ -120,32 +124,3 @@ func (c *Client) WriteMessage() {
 		}
 	}
 }
-
-// ServeWs 提供websocket服务
-// func ServeWs(w http.ResponseWriter, r *http.Request) {
-// 	hub := AttachHub()
-
-// 	gid := r.URL.Query().Get("group_id")
-// 	if "" == gid {
-// 		panic("请指定连接组")
-// 	}
-
-// 	groupID, _ := strconv.Atoi(gid)
-// 	group := hub.GroupByID(int32(groupID))
-
-// 	// 连接房间不存在
-// 	if nil == group {
-// 		panic("连接组不存在")
-// 	}
-
-// 	conn, err := Upgrader.Upgrade(w, r, nil)
-// 	if nil != err {
-// 		http.Error(w, "升级websocket协议失败", 403)
-// 		return
-// 	}
-// 	client := &Client{Group: group, Conn: conn, Send: make(chan []byte, 512), Done: make(chan bool)}
-// 	group.AddClient(client)
-
-// 	go client.WriteMessage()
-// 	go client.ReadMessage()
-// }

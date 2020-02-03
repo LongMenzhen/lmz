@@ -4,13 +4,19 @@ import "encoding/json"
 
 // Context 操作上下文
 type Context struct {
+	Group    *Group
+	Client   *Client
 	Request  Message
 	Response chan []byte
 }
 
 // NewContext 新生成Context结构体
-func NewContext(msg Message) Context {
+func NewContext(msg Message, client *Client) Context {
+	hub := AttachHub()
+	group := hub.GroupByID(msg.GroupID)
 	return Context{
+		Group:    group,
+		Client:   client,
 		Request:  msg,
 		Response: make(chan []byte),
 	}
