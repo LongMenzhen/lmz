@@ -5,7 +5,6 @@ import (
 
 	"github.com/cyrnicolase/lmz/app"
 	"github.com/cyrnicolase/lmz/app/ws"
-	"github.com/cyrnicolase/lmz/config"
 	"github.com/cyrnicolase/lmz/engine"
 )
 
@@ -20,6 +19,4 @@ func init() {
 func Route() {
 	http.HandleFunc("/ws", app.ServeWs)
 	http.HandleFunc("/group", app.BuildGroup)
-
-	engine.RunServe(config.Config.HTTP.Addr)
 }

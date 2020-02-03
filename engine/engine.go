@@ -1,10 +1,5 @@
 package engine
 
-import (
-	"log"
-	"net/http"
-)
-
 // HandlerFunc 执行函数
 type HandlerFunc func(ctx Context)
 
@@ -23,11 +18,4 @@ func Registe(event string, f HandlerFunc) {
 		Event: event,
 		F:     f,
 	})
-}
-
-// RunServe 运行服务
-func RunServe(addr string) {
-	if err := http.ListenAndServe(addr, nil); nil != err {
-		log.Fatal("监听失败" + err.Error())
-	}
 }
