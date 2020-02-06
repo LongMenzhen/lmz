@@ -65,6 +65,12 @@ func (c *Client) ReadMessage() {
 
 		done := make(chan bool, 1)
 		ctx := NewContext(*message, c)
+
+		// 不在消息组内，那么不能给该组发送消息
+		if nil == ctx.Group {
+			continue
+		}
+
 		go func(ctx Context) {
 			for _, action := range Actions {
 				if action.Event == message.Event {

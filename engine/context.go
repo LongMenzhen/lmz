@@ -28,8 +28,8 @@ func (ctx *Context) String(str string) {
 }
 
 // Bytes 字符流输出
-func (ctx *Context) Bytes(bytes []byte) {
-	ctx.Response <- bytes
+func (ctx *Context) Bytes(bytea []byte) {
+	ctx.Response <- bytea
 }
 
 // JSON json格式输出
