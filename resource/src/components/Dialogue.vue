@@ -105,6 +105,9 @@ export default {
     width: 800px;
     height: 600px;
     border: 1px solid;
+    text-align: left;
+    padding-left: 10px;
+    line-height: 24px;
 }
 .input {
     margin-top: 10px;
