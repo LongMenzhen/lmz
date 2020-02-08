@@ -106,8 +106,8 @@ export default {
     height: 600px;
     border: 1px solid;
     text-align: left;
-    padding-left: 10px;
     line-height: 24px;
+    /* margin-left: 10px; */
 }
 .input {
     margin-top: 10px;
@@ -118,6 +118,7 @@ export default {
 }
 .send {
     margin-top: 10px;
+    /* margin-left: 30px; */
     width: 180px;
     height: 160px;
     border: 1px solid;
@@ -131,8 +132,8 @@ export default {
 }
 #txta {
     margin: 0px;
-    height: 154px;
-    width: 596px;
+    height: 158px;
+    width: 598px;
     font-size: 16px;
     font-family: monospace;
 }
