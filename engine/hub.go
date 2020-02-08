@@ -36,6 +36,10 @@ func (h *Hub) RemoveGroup(group *Group) {
 
 // GroupByID 根据组id查询仓库组
 func (h *Hub) GroupByID(groupID int32) *Group {
+	if 0 == groupID {
+		return nil
+	}
+
 	if group, ok := h.Groups[groupID]; ok {
 		return group
 	}

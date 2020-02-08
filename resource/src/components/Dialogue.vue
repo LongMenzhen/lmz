@@ -26,14 +26,48 @@ export default {
     data () {
         return {
             input: '',
+            websock: null,
             contents: []
         }
     },
+    created () {
+        this.initWebsocket();
+    },
     methods: {
         sendMessage: function () {
-            console.log(this.contents)
-            this.contents.push(this.input)
+            // console.log(this.contents)
+            // this.contents.push(this.input)
+            let data = {"event": "say", "group_id": 1, "body": {"content": this.input}}
+            this.websocketSend(JSON.stringify(data))
             this.input = ''
+        },
+        initWebsocket() {
+            const wsuri = 'ws://127.0.0.1:8000/ws';
+            this.websock = new WebSocket(wsuri);
+            this.websock.onopen = this.websocketOnOpen;
+            this.websock.onmessage = this.websocketOnMessage;
+            this.websock.onerror = this.websocketOnError;
+            this.websock.onclose = this.websocketClose;
+        },
+        websocketOnOpen() {
+            console.log('连接成功')
+            let actions = {"event": "login", "body": {"name": "Tom"}};
+            this.websock.send(JSON.stringify(actions));
+        },
+        websocketOnError() {
+            this.initWebsocket();
+        },
+        websocketOnMessage(e) {
+            // const redata = JSON.parse(e.data)
+            console.log(123)
+            console.log(e)
+            this.contents.push(e.data)
+        },
+        websocketSend(Data) {
+            this.websock.send(Data)
+        },
+        websocketClose(e) {
+            console.log('断开连接', e)
         }
     }
 }
@@ -41,6 +75,7 @@ export default {
 <style scoped>
 * {
     margin: 0;
+    padding: 0;
 }
 .main {
     width: 1024px;

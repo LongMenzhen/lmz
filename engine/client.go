@@ -64,32 +64,43 @@ func (c *Client) ReadMessage() {
 		}
 
 		done := make(chan bool, 1)
+		noEvent := make(chan bool, 1)
 		ctx := NewContext(*message, c)
 
 		// 不在消息组内，那么不能给该组发送消息
-		if nil == ctx.Group {
-			continue
-		}
+		// if nil == ctx.Group {
+		// 	continue
+		// }
 
 		go func(ctx Context) {
 			for _, action := range Actions {
 				if action.Event == message.Event {
 					action.F(ctx)
 					done <- true
-					break
+					return
 				}
 			}
 		}(ctx)
 
 		// 处理F 没有返回数据的情况
 		select {
+		case <-noEvent:
+			log.Println("<-noEvent")
+			close(ctx.Response)
+			close(done)
 		case <-done:
 			log.Println("<-done")
 			close(ctx.Response)
+			close(noEvent)
 		case result := <-ctx.Response:
 			log.Println("<-result")
-			ctx.Group.Broadcast <- result
+			if nil != ctx.Group {
+				ctx.Group.Broadcast <- result
+			} else {
+				log.Println("没有找到消息接收组")
+			}
 			close(done)
+			close(noEvent)
 		}
 	}
 }

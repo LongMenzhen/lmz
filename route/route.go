@@ -13,7 +13,9 @@ func init() {
 	engine.Registe("somebody", ws.SomebodyAction)
 	engine.Registe("welcome", ws.WelcomeAction)
 	engine.Registe("ping", ws.PingAction)
+	engine.Registe("login", ws.LoginAction)
 	engine.Registe("join-group", ws.JoinGroupAction)
+	engine.Registe("say", ws.SayAction)
 }
 
 // Route 注册路由

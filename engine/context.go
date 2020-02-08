@@ -14,6 +14,7 @@ type Context struct {
 func NewContext(msg Message, client *Client) Context {
 	hub := AttachHub()
 	group := hub.GroupByID(msg.GroupID)
+
 	return Context{
 		Group:    group,
 		Client:   client,
