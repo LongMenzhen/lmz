@@ -1,1 +1,3 @@
 .vscode
+node_modules/
+resource/node_modules/
