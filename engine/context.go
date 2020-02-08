@@ -15,6 +15,11 @@ func NewContext(msg Message, client *Client) Context {
 	hub := AttachHub()
 	group := hub.GroupByID(msg.GroupID)
 
+	// 临时使用，实际上应该是客户端先加入组了才能进行组消息发送；现在发送组消息的时候，默认都将客户端加入进去
+	if nil != group {
+		group.AddClient(client)
+	}
+
 	return Context{
 		Group:    group,
 		Client:   client,

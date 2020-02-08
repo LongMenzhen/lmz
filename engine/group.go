@@ -1,6 +1,8 @@
 package engine
 
-import "log"
+import (
+	"log"
+)
 
 var groupID int32 = 0
 
@@ -28,6 +30,15 @@ func (r *Group) AddClient(client *Client) {
 	if _, ok := r.Clients[client]; !ok {
 		r.Clients[client] = true
 	}
+}
+
+// HasClient 判断组内是否存指定客户端
+func (r *Group) HasClient(client *Client) bool {
+	if _, ok := r.Clients[client]; !ok {
+		return false
+	}
+
+	return true
 }
 
 // RemoveClient 移除客户端

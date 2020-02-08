@@ -3,7 +3,7 @@
         <div class="left">
             <!-- 内容框 -->
             <div class="content">
-                <div v-for="content in contents" v-bind:key="content" >{{content}}</div>
+                <div v-for="content in contents">{{content}}</div>
             </div>
 
             <!-- 操作框 -->
@@ -34,9 +34,13 @@ export default {
         this.initWebsocket();
     },
     methods: {
-        sendMessage: function () {
+        sendMessage: function() {
             // console.log(this.contents)
             // this.contents.push(this.input)
+            if (0 >= this.input.length) {
+                alert("输入内容不能为空")
+                return
+            }
             let data = {"event": "say", "group_id": 1, "body": {"content": this.input}}
             this.websocketSend(JSON.stringify(data))
             this.input = ''
@@ -48,20 +52,23 @@ export default {
             this.websock.onmessage = this.websocketOnMessage;
             this.websock.onerror = this.websocketOnError;
             this.websock.onclose = this.websocketClose;
+
         },
         websocketOnOpen() {
             console.log('连接成功')
             let actions = {"event": "login", "body": {"name": "Tom"}};
             this.websock.send(JSON.stringify(actions));
         },
-        websocketOnError() {
-            this.initWebsocket();
+        websocketOnError(ev) {
+            console.log("出错了！")
+            console.log(ev)
+            // this.initWebsocket();
         },
-        websocketOnMessage(e) {
-            // const redata = JSON.parse(e.data)
-            console.log(123)
-            console.log(e)
-            this.contents.push(e.data)
+        websocketOnMessage(event) {
+            // const redata = JSON.parse(event.data)
+            // console.log(123)
+            // console.log(event)
+            this.contents.push(event.data)
         },
         websocketSend(Data) {
             this.websock.send(Data)
