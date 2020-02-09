@@ -24,10 +24,13 @@ var Upgrader = websocket.Upgrader{
 	},
 }
 
+var clientID int32 = 0
+
 // Client 服务端注册客户端结构体
 // 这里设计是1个客户端属于一个房间
 // 后续可以升级为 N 对 M  的设计
 type Client struct {
+	ID     int32
 	Groups map[*Group]bool // 客户端所属房间
 	Conn   *websocket.Conn // 客户端连接
 	Send   chan []byte     // 待发送给客户端的内容
@@ -140,4 +143,20 @@ func (c *Client) WriteMessage() {
 			}
 		}
 	}
+}
+
+// NewClient 创建新的客户端连接
+func NewClient(conn *websocket.Conn) *Client {
+	clientID++
+	client := &Client{
+		ID:   clientID,
+		Conn: conn,
+		Send: make(chan []byte),
+		Done: make(chan bool),
+	}
+
+	hub := AttachHub()
+	hub.RegisterClient <- client // 注册客户端
+
+	return client
 }

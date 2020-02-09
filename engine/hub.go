@@ -18,6 +18,10 @@ type Hub struct {
 	Groups     map[int32]*Group // 仓库组集合
 	Register   chan *Group      // 新建组
 	Unregister chan *Group      // 销毁组
+
+	Clients          map[int32]*Client
+	RegisterClient   chan *Client
+	UnregisterClient chan *Client
 }
 
 // AddGroup 将组加入到仓库
@@ -31,6 +35,19 @@ func (h *Hub) RemoveGroup(group *Group) {
 	if _, ok := h.Groups[group.ID]; ok {
 		group.Done <- true         // 关闭组服务
 		delete(h.Groups, group.ID) // 从集合中删除该组
+	}
+}
+
+// AddClient 将客户端连接加入到仓库
+func (h *Hub) AddClient(client *Client) {
+	h.Clients[client.ID] = client
+}
+
+// RemoveClient 从仓库中移除客户端
+func (h *Hub) RemoveClient(client *Client) {
+	if _, ok := h.Clients[client.ID]; ok {
+		client.Done <- true
+		delete(h.Clients, client.ID)
 	}
 }
 
@@ -57,6 +74,10 @@ func (h *Hub) Run() {
 				h.AddGroup(group)
 			case group := <-h.Unregister: // 某个操作结束后，销毁组
 				h.RemoveGroup(group)
+			case client := <-h.RegisterClient:
+				h.AddClient(client)
+			case client := <-h.UnregisterClient:
+				h.RemoveClient(client)
 			}
 		}
 	}()
@@ -66,9 +87,12 @@ func (h *Hub) Run() {
 func AttachHub() *Hub {
 	onceFunc := func() {
 		hub = &Hub{
-			Groups:     make(map[int32]*Group),
-			Register:   make(chan *Group),
-			Unregister: make(chan *Group),
+			Groups:           make(map[int32]*Group),
+			Register:         make(chan *Group),
+			Unregister:       make(chan *Group),
+			Clients:          make(map[int32]*Client),
+			RegisterClient:   make(chan *Client),
+			UnregisterClient: make(chan *Client),
 		}
 	}
 	once.Do(onceFunc)

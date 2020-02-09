@@ -1,5 +1,9 @@
 <template>
     <div class="main">
+        <div class="top">
+            <input v-model="name" />
+            <button @click="login">登陆</button>
+        </div>
         <div class="left">
             <!-- 内容框 -->
             <div class="content">
@@ -16,7 +20,9 @@
         </div>
 
         <!--右边-->
-        <div class="right"></div>
+        <div class="right">
+            <div v-for="name in names">{{name}}</div>
+        </div>
     </div>
 </template>
 
@@ -25,18 +31,26 @@ export default {
     name: 'dialogue',
     data () {
         return {
+            name: '',
+            names: [],
             input: '',
             websock: null,
             contents: []
         }
     },
     created () {
-        this.initWebsocket();
+        // this.initWebsocket();
     },
     methods: {
+        login: function() {
+            if (0 >= this.name.length) {
+                alert('请输入登陆名')
+                return
+            }
+
+            this.initWebsocket()
+        },
         sendMessage: function() {
-            // console.log(this.contents)
-            // this.contents.push(this.input)
             if (0 >= this.input.length) {
                 alert("输入内容不能为空")
                 return
@@ -56,7 +70,7 @@ export default {
         },
         websocketOnOpen() {
             console.log('连接成功')
-            let actions = {"event": "login", "body": {"name": "Tom"}};
+            let actions = {"event": "login", "body": {"name": this.name}};
             this.websock.send(JSON.stringify(actions));
         },
         websocketOnError(ev) {
@@ -65,10 +79,18 @@ export default {
             // this.initWebsocket();
         },
         websocketOnMessage(event) {
-            // const redata = JSON.parse(event.data)
-            // console.log(123)
-            // console.log(event)
-            this.contents.push(event.data)
+            // {"event": "say", "body": string}
+            // {"event": "login", "body": {name:(string)}}
+
+            let data = JSON.parse(event.data)
+            switch (data['event']) {
+                case 'say':
+                    this.contents.push(data['body'])
+                    break
+                case 'login':
+                    this.names.push(data['body']['name'])
+                    break;
+            }
         },
         websocketSend(Data) {
             this.websock.send(Data)
@@ -91,6 +113,9 @@ export default {
     border: 1px solid;
     padding: 1px;
 }
+.top {
+    height: 28px;
+}
 .left {
     float: left;
     width: 800px;
@@ -99,7 +124,7 @@ export default {
     float: right;
     width: 200px;
     border: 1px solid;
-    height: 798px;
+    height: 768px;
 }
 .content {
     width: 800px;

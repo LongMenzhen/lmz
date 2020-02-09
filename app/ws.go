@@ -15,12 +15,7 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "升级websocket协议失败", 403)
 		return
 	}
-
-	client := &engine.Client{
-		Conn: conn,
-		Send: make(chan []byte, 512),
-		Done: make(chan bool),
-	}
+	client := engine.NewClient(conn)
 
 	go client.WriteMessage()
 	go client.ReadMessage()

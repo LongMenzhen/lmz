@@ -10,12 +10,12 @@ import (
 
 func init() {
 	// 注册ws 接收消息事件
-	engine.Registe("somebody", ws.SomebodyAction)
-	engine.Registe("welcome", ws.WelcomeAction)
-	engine.Registe("ping", ws.PingAction)
-	engine.Registe("login", ws.LoginAction)
-	engine.Registe("join-group", ws.JoinGroupAction)
-	engine.Registe("say", ws.SayAction)
+	engine.Bind("somebody", ws.SomebodyAction)
+	engine.Bind("welcome", ws.WelcomeAction)
+	engine.Bind("ping", ws.PingAction)
+	engine.Bind("login", ws.LoginAction)
+	engine.Bind("join-group", ws.JoinGroupAction)
+	engine.Bind("say", ws.SayAction)
 }
 
 // Route 注册路由

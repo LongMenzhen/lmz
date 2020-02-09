@@ -2,6 +2,12 @@ package engine
 
 import "encoding/json"
 
+// Response 下行数据
+type Response struct {
+	Event string `json:"event"`
+	Body  string `json:"body"`
+}
+
 // Context 操作上下文
 type Context struct {
 	Group    *Group
@@ -30,16 +36,27 @@ func NewContext(msg Message, client *Client) Context {
 
 // String 字符串输出
 func (ctx *Context) String(str string) {
-	ctx.Response <- []byte(str)
+	ctx.Response <- ctx.format([]byte(str))
 }
 
 // Bytes 字符流输出
 func (ctx *Context) Bytes(bytea []byte) {
-	ctx.Response <- bytea
+	ctx.Response <- ctx.format(bytea)
 }
 
 // JSON json格式输出
 func (ctx *Context) JSON(j map[string]interface{}) {
-	bytes, _ := json.Marshal(j)
-	ctx.Bytes(bytes)
+	bytea, _ := json.Marshal(j)
+	ctx.Response <- ctx.format(bytea)
+}
+
+func (ctx Context) format(bytea []byte) []byte {
+	resp := Response{
+		Event: ctx.Request.Event,
+		Body:  string(bytea),
+	}
+
+	data, _ := json.Marshal(resp)
+
+	return data
 }
