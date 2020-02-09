@@ -21,7 +21,7 @@
 
         <!--右边-->
         <div class="right">
-            <div v-for="name in names">{{name}}</div>
+            <div class="name" v-for="name in names">{{name}}</div>
         </div>
     </div>
 </template>
@@ -66,7 +66,6 @@ export default {
             this.websock.onmessage = this.websocketOnMessage;
             this.websock.onerror = this.websocketOnError;
             this.websock.onclose = this.websocketClose;
-
         },
         websocketOnOpen() {
             console.log('连接成功')
@@ -79,13 +78,12 @@ export default {
             // this.initWebsocket();
         },
         websocketOnMessage(event) {
-            // {"event": "say", "body": string}
-            // {"event": "login", "body": {name:(string)}}
-
             let data = JSON.parse(event.data)
             switch (data['event']) {
                 case 'say':
-                    this.contents.push(data['body'])
+                    let body = data['body']
+                    let content = body['name'] + ' ' + body['created_at'] + ':' + body['content']
+                    this.contents.push(content)
                     break
                 case 'login':
                     this.names.push(data['body']['name'])
@@ -126,6 +124,12 @@ export default {
     border: 1px solid;
     height: 768px;
 }
+
+.right .name {
+    border: 1px solid;
+    text-align: right;
+}
+
 .content {
     width: 800px;
     height: 600px;

@@ -2,14 +2,26 @@ package ws
 
 import (
 	"encoding/json"
-	"fmt"
+	"time"
 
 	"github.com/cyrnicolase/lmz/engine"
-	"github.com/cyrnicolase/lmz/model"
 	// "github.com/vmihailenco/msgpack/v4"
 )
 
-var users map[*engine.Client]model.User = map[*engine.Client]model.User{}
+var (
+	space       = []byte{' '}
+	newline     = []byte{'\n'}
+	htmlNewline = []byte("<br />")
+	htmlSpace   = []byte("&nbsp;")
+)
+
+var users map[int32]UserMap = map[int32]UserMap{}
+
+// UserMap 用户信息
+type UserMap struct {
+	Name   string
+	Client *engine.Client
+}
 
 // LoginAction 登陆
 // 第一次进入房间，要求必须有全局唯一的用户信息
@@ -25,12 +37,26 @@ func LoginAction(ctx engine.Context) {
 		return
 	}
 
-	user := model.User{
-		Name:     request.Name,
-		ClientID: ctx.Request.GroupID,
+	user := UserMap{
+		Name:   request.Name,
+		Client: ctx.Client,
 	}
 
-	users[ctx.Client] = user
+	// 如果用户已经存在
+	for _, u := range users {
+		if user.Name == u.Name {
+			return
+		}
+	}
+
+	// TODO 用户名唯一性校验
+	users[user.Client.ID] = user
+	data := ctx.Format(map[string]interface{}{
+		"name": user.Name,
+	})
+
+	hub := engine.AttachHub()
+	hub.Broadcast <- data
 
 	// b, err := msgpack.Marshal(&user)
 	// if nil != err {
@@ -56,8 +82,22 @@ func SayAction(ctx engine.Context) {
 		return
 	}
 
-	user := users[ctx.Client]
+	// content := bytes.Replace([]byte(request.Content), newline, htmlNewline, -1)
+	// content = bytes.Replace(content, space, htmlSpace, -1)
+	user := users[ctx.Client.ID]
 	name := user.Name
 
-	ctx.String(fmt.Sprintf("%s说:%s", name, request.Content))
+	type Result struct {
+		Name      string    `json:"name"`
+		Content   string    `json:"content"`
+		CreatedAt time.Time `json:"created_at"`
+	}
+
+	result := Result{
+		Name:      name,
+		Content:   string(request.Content),
+		CreatedAt: time.Now(),
+	}
+
+	ctx.Mix(result)
 }

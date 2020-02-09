@@ -1,11 +1,13 @@
 package engine
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // Response 下行数据
 type Response struct {
-	Event string `json:"event"`
-	Body  string `json:"body"`
+	Event string      `json:"event"`
+	Body  interface{} `json:"body"`
 }
 
 // Context 操作上下文
@@ -36,24 +38,37 @@ func NewContext(msg Message, client *Client) Context {
 
 // String 字符串输出
 func (ctx *Context) String(str string) {
-	ctx.Response <- ctx.format([]byte(str))
+	ctx.Response <- ctx.Format(str)
 }
 
 // Bytes 字符流输出
 func (ctx *Context) Bytes(bytea []byte) {
-	ctx.Response <- ctx.format(bytea)
+	ctx.Response <- ctx.Format(string(bytea))
 }
 
 // JSON json格式输出
 func (ctx *Context) JSON(j map[string]interface{}) {
-	bytea, _ := json.Marshal(j)
-	ctx.Response <- ctx.format(bytea)
+	// bytea, _ := json.Marshal(j)
+	// ctx.Response <- ctx.Format(bytea)
+
+	ctx.Response <- ctx.Format(j)
 }
 
-func (ctx Context) format(bytea []byte) []byte {
+// Object 返回对象
+func (ctx *Context) Object(o struct{}) {
+	ctx.Response <- ctx.Format(o)
+}
+
+// Mix 混合模式
+func (ctx *Context) Mix(m interface{}) {
+	ctx.Response <- ctx.Format(m)
+}
+
+// Format 下行数据格式化
+func (ctx Context) Format(i interface{}) []byte {
 	resp := Response{
 		Event: ctx.Request.Event,
-		Body:  string(bytea),
+		Body:  i,
 	}
 
 	data, _ := json.Marshal(resp)

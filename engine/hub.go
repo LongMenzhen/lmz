@@ -22,6 +22,7 @@ type Hub struct {
 	Clients          map[int32]*Client
 	RegisterClient   chan *Client
 	UnregisterClient chan *Client
+	Broadcast        chan []byte
 }
 
 // AddGroup 将组加入到仓库
@@ -78,6 +79,10 @@ func (h *Hub) Run() {
 				h.AddClient(client)
 			case client := <-h.UnregisterClient:
 				h.RemoveClient(client)
+			case message := <-h.Broadcast:
+				for _, client := range h.Clients {
+					client.Send <- message
+				}
 			}
 		}
 	}()
@@ -93,6 +98,7 @@ func AttachHub() *Hub {
 			Clients:          make(map[int32]*Client),
 			RegisterClient:   make(chan *Client),
 			UnregisterClient: make(chan *Client),
+			Broadcast:        make(chan []byte),
 		}
 	}
 	once.Do(onceFunc)
