@@ -2,9 +2,26 @@ package engine
 
 import (
 	"log"
+	"sync"
 )
 
-var groupID int32 = 0
+// GroupID 组id；考虑到并发的情况，这里使用锁
+type GroupID struct {
+	ID int32
+	m  *sync.RWMutex
+}
+
+var groupID GroupID
+
+// IncrGroupID 自增组id
+func IncrGroupID() int32 {
+	groupID.m.Lock()
+	defer groupID.m.Unlock()
+
+	groupID.ID++
+
+	return groupID.ID
+}
 
 // Group 聊天房间
 type Group struct {
@@ -16,9 +33,9 @@ type Group struct {
 
 // NewGroup 创建房间
 func NewGroup() *Group {
-	groupID++
+	id := IncrClientID()
 	return &Group{
-		ID:        groupID,
+		ID:        id,
 		Clients:   make(map[*Client]bool),
 		Broadcast: make(chan []byte, 256),
 		Done:      make(chan bool),

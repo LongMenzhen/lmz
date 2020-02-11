@@ -3,6 +3,7 @@ package engine
 import (
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -24,7 +25,13 @@ var Upgrader = websocket.Upgrader{
 	},
 }
 
-var clientID int32 = 0
+// ClientID 这里需要考虑并发问题，所以要进行锁操作
+type ClientID struct {
+	ID int32
+	m  *sync.RWMutex
+}
+
+var clientID ClientID
 
 // Client 服务端注册客户端结构体
 // 这里设计是1个客户端属于一个房间
@@ -147,9 +154,9 @@ func (c *Client) WriteMessage() {
 
 // NewClient 创建新的客户端连接
 func NewClient(conn *websocket.Conn) *Client {
-	clientID++
+	id := IncrClientID()
 	client := &Client{
-		ID:   clientID,
+		ID:   id,
 		Conn: conn,
 		Send: make(chan []byte),
 		Done: make(chan bool),
@@ -159,4 +166,13 @@ func NewClient(conn *websocket.Conn) *Client {
 	hub.RegisterClient <- client // 注册客户端
 
 	return client
+}
+
+// IncrClientID 自增客户端id
+func IncrClientID() int32 {
+	clientID.m.Lock()
+	defer clientID.m.Unlock()
+	clientID.ID++
+
+	return clientID.ID
 }

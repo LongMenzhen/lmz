@@ -2,9 +2,12 @@ package ws
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/cyrnicolase/lmz/engine"
+	"github.com/cyrnicolase/lmz/model"
 	// "github.com/vmihailenco/msgpack/v4"
 )
 
@@ -64,9 +67,10 @@ func LoginAction(ctx engine.Context) {
 	// 	return
 	// }
 
-	// key := fmt.Sprintf("login:user:%d", user.ClientID)
-	// redis := model.Redis()
-	// redis.Set(key, b)
+	key := fmt.Sprintf("login:user:%d", user.Client.ID)
+	log.Println("=======", key, user.Name)
+	redis := model.Redis()
+	redis.Set(key, user.Name, 60*time.Second)
 
 }
 
