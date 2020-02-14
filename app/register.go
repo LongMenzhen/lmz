@@ -26,5 +26,5 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	ret, _ := json.Marshal(user)
 	log.Println(string(ret))
 	// w.Header().Add("content-type", "application/json")
-	// fmt.Fprint(w, "用户注册成功")
+	fmt.Fprint(w, string(ret))
 }

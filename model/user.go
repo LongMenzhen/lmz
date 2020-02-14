@@ -78,9 +78,10 @@ func CreateUser(user User) error {
 // NewUser 创建新的用户
 func NewUser(username, password string) *User {
 	return &User{
-		ID:       NewUserID(),
-		Username: username,
-		Password: password,
+		ID:        NewUserID(),
+		Username:  username,
+		Password:  password,
+		CreatedAt: time.Now(),
 	}
 }
 
@@ -114,7 +115,7 @@ func NewClientUser(clientID int32, userID UserID) *ClientUser {
 
 // CreateClientUser 创建客户端用户关联关系
 func CreateClientUser(clientUser ClientUser) error {
-	err := rds.Set(clientUser.TableName(clientUser.ClientID), clientUser.UserID, 0).Err()
+	err := rds.Set(clientUser.TableName(clientUser.ClientID), int32(clientUser.UserID), 0).Err()
 	if nil != err {
 		return err
 	}

@@ -11,7 +11,10 @@ type GroupID struct {
 	m  *sync.RWMutex
 }
 
-var groupID GroupID
+var groupID = GroupID{
+	ID: 0,
+	m:  &sync.RWMutex{},
+}
 
 // IncrGroupID 自增组id
 func IncrGroupID() int32 {

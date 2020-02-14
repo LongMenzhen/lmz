@@ -1,7 +1,8 @@
 <template>
     <div class="main">
         <div class="top">
-            <input v-model="name" />
+            <label>账号： </label><input v-model="user_id" />
+            <lable>密码： </lable><input v-model="password" />
             <button @click="login">登陆</button>
         </div>
         <div class="left">
@@ -31,7 +32,8 @@ export default {
     name: 'dialogue',
     data () {
         return {
-            name: '',
+            user_id: '',
+            password: '',
             names: [],
             input: '',
             websock: null,
@@ -43,8 +45,8 @@ export default {
     },
     methods: {
         login: function() {
-            if (0 >= this.name.length) {
-                alert('请输入登陆名')
+            if (0 >= this.user_id.length || 0 >= this.password.length) {
+                alert('请输入登陆账号和密码')
                 return
             }
 
@@ -69,7 +71,7 @@ export default {
         },
         websocketOnOpen() {
             console.log('连接成功')
-            let actions = {"event": "login", "body": {"name": this.name}};
+            let actions = {"event": "login", "body": {"user_id": this.user_id, "password": this.password}};
             this.websock.send(JSON.stringify(actions));
         },
         websocketOnError(ev) {

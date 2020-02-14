@@ -31,7 +31,10 @@ type ClientID struct {
 	m  *sync.RWMutex
 }
 
-var clientID ClientID
+var clientID = ClientID{
+	ID: 0,
+	m:  &sync.RWMutex{},
+}
 
 // Client 服务端注册客户端结构体
 // 这里设计是1个客户端属于一个房间
@@ -107,7 +110,8 @@ func (c *Client) ReadMessage() {
 			if nil != ctx.Group {
 				ctx.Group.Broadcast <- result
 			} else {
-				log.Println("没有找到消息接收组")
+				// 如果没有接收消息组，那么就将消息发送给自己
+				c.Send <- result
 			}
 			close(done)
 			close(noEvent)

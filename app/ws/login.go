@@ -2,6 +2,7 @@ package ws
 
 import (
 	"encoding/json"
+	"log"
 
 	"github.com/cyrnicolase/lmz/engine"
 	"github.com/cyrnicolase/lmz/model"
@@ -11,10 +12,11 @@ import (
 // LoginAction 登陆
 func LoginAction(ctx engine.Context) {
 	type Request struct {
-		UserID   int32
-		Password string
+		UserID   int32  `json:"user_id,string"` // 这里标注上行的数据是string类型，从string类型转换成int32
+		Password string `json:"password"`
 	}
 
+	log.Println("ctxbody", string(ctx.Request.Body))
 	var request Request
 	if err := json.Unmarshal(ctx.Request.Body, &request); nil != err {
 		logrus.Error("ws登陆用户登陆信息json解析失败" + err.Error())
