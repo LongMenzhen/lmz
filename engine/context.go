@@ -64,6 +64,12 @@ func (ctx *Context) Mix(m interface{}) {
 	ctx.Response <- ctx.Format(m)
 }
 
+// Error 返回错误信息
+func (ctx *Context) Error(msg string) {
+	ctx.Request.Event = "error"
+	ctx.Response <- ctx.Format(msg)
+}
+
 // Format 下行数据格式化
 func (ctx Context) Format(i interface{}) []byte {
 	resp := Response{

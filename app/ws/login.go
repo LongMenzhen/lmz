@@ -2,106 +2,52 @@ package ws
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
-	"time"
 
 	"github.com/cyrnicolase/lmz/engine"
 	"github.com/cyrnicolase/lmz/model"
-	// "github.com/vmihailenco/msgpack/v4"
+	"github.com/sirupsen/logrus"
 )
-
-var (
-	space       = []byte{' '}
-	newline     = []byte{'\n'}
-	htmlNewline = []byte("<br />")
-	htmlSpace   = []byte("&nbsp;")
-)
-
-var users map[int32]UserMap = map[int32]UserMap{}
-
-// UserMap 用户信息
-type UserMap struct {
-	Name   string
-	Client *engine.Client
-}
 
 // LoginAction 登陆
-// 第一次进入房间，要求必须有全局唯一的用户信息
-// 这里使用用户名做全局唯一控制
 func LoginAction(ctx engine.Context) {
 	type Request struct {
-		Name string `json:"name"`
+		UserID   int32
+		Password string
 	}
 
 	var request Request
 	if err := json.Unmarshal(ctx.Request.Body, &request); nil != err {
-		ctx.String("登陆信息缺少登陆用户名")
+		logrus.Error("ws登陆用户登陆信息json解析失败" + err.Error())
+		ctx.Error("ws登陆用户信息json解释错误")
 		return
 	}
 
-	user := UserMap{
-		Name:   request.Name,
-		Client: ctx.Client,
+	user := &model.User{ID: model.UserID(request.UserID)}
+	if err := user.MakeUser(); nil != err {
+		logrus.Error("登陆用户不存在" + err.Error())
+		ctx.Error("登陆用户不存在")
+		return
 	}
 
-	// 如果用户已经存在
-	for _, u := range users {
-		if user.Name == u.Name {
-			return
-		}
+	if user.Password != request.Password {
+		logrus.Error("登陆账号密码错误")
+		ctx.Error("登陆账号密码错误")
+		return
 	}
 
-	// TODO 用户名唯一性校验
-	users[user.Client.ID] = user
-	data := ctx.Format(map[string]interface{}{
-		"name": user.Name,
-	})
+	// 关联clientID 与 userID
+	clientID := ctx.Client.ID
+	clientUser := model.NewClientUser(clientID, user.ID)
+	if err := model.CreateClientUser(*clientUser); nil != err {
+		logrus.Error("关联ws客户端id与顾客id失败" + err.Error())
+		ctx.Error("登陆失败")
+		return
+	}
 
-	hub := engine.AttachHub()
-	hub.Broadcast <- data
-
-	// b, err := msgpack.Marshal(&user)
-	// if nil != err {
-	// 	ctx.String("保存登陆用户信息失败")
-	// 	return
-	// }
-
-	key := fmt.Sprintf("login:user:%d", user.Client.ID)
-	log.Println("=======", key, user.Name)
-	redis := model.Redis()
-	redis.Set(key, user.Name, 60*time.Second)
-
+	ctx.String("登陆成功")
 }
 
 // SayAction 说点什么
 func SayAction(ctx engine.Context) {
-	type Request struct {
-		Content string `json:"content"`
-	}
 
-	var request Request
-	if err := json.Unmarshal(ctx.Request.Body, &request); nil != err {
-		ctx.String("发送消息格式错误" + err.Error())
-		return
-	}
-
-	// content := bytes.Replace([]byte(request.Content), newline, htmlNewline, -1)
-	// content = bytes.Replace(content, space, htmlSpace, -1)
-	user := users[ctx.Client.ID]
-	name := user.Name
-
-	type Result struct {
-		Name      string    `json:"name"`
-		Content   string    `json:"content"`
-		CreatedAt time.Time `json:"created_at"`
-	}
-
-	result := Result{
-		Name:      name,
-		Content:   string(request.Content),
-		CreatedAt: time.Now(),
-	}
-
-	ctx.Mix(result)
 }
