@@ -166,8 +166,9 @@ func NewClient(conn *websocket.Conn) *Client {
 		Done: make(chan bool),
 	}
 
-	hub := AttachHub()
-	hub.RegisterClient <- client // 注册客户端
+	// 如果没有登陆，就不能注册进入hub中
+	// hub := AttachHub()
+	// hub.RegisterClient <- client // 注册客户端
 
 	return client
 }

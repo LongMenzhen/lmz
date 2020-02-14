@@ -24,7 +24,7 @@ func LoginAction(ctx engine.Context) {
 		return
 	}
 
-	user := &model.User{ID: model.UserID(request.UserID)}
+	user := &model.User{ID: request.UserID}
 	if err := user.MakeUser(); nil != err {
 		logrus.Error("登陆用户不存在" + err.Error())
 		ctx.Error("登陆用户不存在")
@@ -46,7 +46,15 @@ func LoginAction(ctx engine.Context) {
 		return
 	}
 
-	ctx.String("登陆成功")
+	hub := engine.AttachHub()
+	hub.RegisterClient <- ctx.Client
+
+	type Response struct {
+		Name  string
+		Names []string
+	}
+
+	// ctx.String("登陆成功")
 }
 
 // SayAction 说点什么

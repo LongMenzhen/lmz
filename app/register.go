@@ -23,6 +23,12 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nuser := &model.User{
+		ID: user.ID,
+	}
+	nuser.MakeUser()
+	log.Println("-->", nuser)
+
 	ret, _ := json.Marshal(user)
 	log.Println(string(ret))
 	// w.Header().Add("content-type", "application/json")
