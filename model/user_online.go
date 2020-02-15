@@ -14,8 +14,8 @@ type UserClient struct {
 
 // TableName 返回Rediskey
 // user:client:{user_id}
-func (UserClient) TableName(userID int32) string {
-	return fmt.Sprintf("user:client:%d", int(userID))
+func (UserClient) TableName(cllientid int32) string {
+	return fmt.Sprintf("user:client:%d", int(cllientid))
 }
 
 // NewUserClient 创建客户端、顾客之间关系

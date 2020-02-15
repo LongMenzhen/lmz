@@ -48,11 +48,11 @@ func LoginAction(ctx engine.Context) {
 
 	hub := engine.AttachHub()
 	hub.Register <- ctx.Client
-
 	names := map[string]interface{}{
 		"names": model.MultGetNames(),
 		"name":  user.Username,
 	}
+
 	ctx.Mix(names)
 }
 

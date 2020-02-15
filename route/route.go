@@ -21,4 +21,5 @@ func init() {
 func Route() {
 	http.HandleFunc("/ws", app.ServeWs)
 	http.HandleFunc("/register", app.Register)
+	http.HandleFunc("/group", app.CreateGroup)
 }
