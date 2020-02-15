@@ -8,18 +8,17 @@
 
 local clientidskey = KEYS[1]
 
-names = {}
-clientids = redis.call("smembers", clientidskey)
-for i = 0, #clientids 
+local names = {}
+local clientids = redis.call("smembers", clientidskey)
+for index, clientid in pairs(clientids)
 do
-    clientid = clientids[i]
-    key = "user:client:" .. clientid
-    userid = redis.call("get", key)
-    userkey = "user:" .. userid
-    user = redis.call("get", userkey)
-    detail = cmsgpack.unpack(user)
+    local key = "user:client:" .. clientid
+    local userid = redis.call("get", key)
+    local userkey = "user:" .. userid
+    local user = redis.call("get", userkey)
+    local detail = cmsgpack.unpack(user)
 
-    table.insert(names, detail['username'])
+    table.insert(names, detail['Username'])
 end
 
 return names

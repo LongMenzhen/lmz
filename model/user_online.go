@@ -2,6 +2,8 @@ package model
 
 import (
 	"fmt"
+
+	"github.com/cyrnicolase/lmz/config"
 )
 
 // ClientUser socket客户端与用户关联关系
@@ -46,4 +48,16 @@ func CreateClientUser(clientUser ClientUser) error {
 	}
 
 	return nil
+}
+
+// MultGetNames 返回当前登录的所有用户名
+func MultGetNames() []string {
+	ret, _ := rds.EvalSha(config.Config.Luas.MultGetNames, []string{ClientIDs{}.TableName()}, nil).Result()
+	names, ins := []string{}, ret.([]interface{})
+
+	for _, inter := range ins {
+		names = append(names, inter.(string))
+	}
+
+	return names
 }

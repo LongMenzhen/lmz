@@ -2,8 +2,6 @@ package model
 
 import (
 	"fmt"
-	"log"
-	"time"
 
 	"github.com/vmihailenco/msgpack/v4"
 )
@@ -13,7 +11,7 @@ import (
 
 // NewUserID 返回自增的最新UserID
 func NewUserID() int32 {
-	key := "userid"
+	key := "userid_seq"
 	number, _ := rds.Incr(key).Result()
 
 	return int32(number)
@@ -21,10 +19,9 @@ func NewUserID() int32 {
 
 // User 登陆用户
 type User struct {
-	ID        int32     `json:"id"`
-	Username  string    `json:"username"`
-	Password  string    `json:"-"`
-	CreatedAt time.Time `json:"created_at"`
+	ID       int32  `json:"id"`
+	Username string `json:"username"`
+	Password string `json:"-"`
 }
 
 // TableName 返回对应Redis存储的Key
@@ -36,9 +33,6 @@ func (User) TableName(id int32) string {
 // 根据User.ID 查询Redis存储信息，将查询结果msgpack反解析为User 对象
 func (u *User) MakeUser() error {
 	bytea, _ := rds.Get(u.TableName(u.ID)).Bytes()
-
-	log.Println("====>", string(bytea))
-
 	if err := msgpack.Unmarshal(bytea, u); nil != err {
 		return err
 	}
@@ -79,10 +73,9 @@ func CreateUser(user User) error {
 // NewUser 创建新的用户
 func NewUser(username, password string) *User {
 	return &User{
-		ID:        NewUserID(),
-		Username:  username,
-		Password:  password,
-		CreatedAt: time.Now(),
+		ID:       NewUserID(),
+		Username: username,
+		Password: password,
 	}
 }
 

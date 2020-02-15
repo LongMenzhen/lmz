@@ -14,6 +14,7 @@ var Config Setting
 type Setting struct {
 	HTTP  httpSetting  `yaml:"http"`
 	Redis redisSetting `yaml:"redis"`
+	Luas  luasSetting  `yaml:"luas"`
 }
 
 type httpSetting struct {
@@ -24,6 +25,11 @@ type httpSetting struct {
 type redisSetting struct {
 	Host string `yaml:"host"`
 	Port int    `yaml:"port"`
+}
+
+// luasSetting lua操作Redis的脚本
+type luasSetting struct {
+	MultGetNames string `yaml:"mult_get_names"`
 }
 
 func init() {

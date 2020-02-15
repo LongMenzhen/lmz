@@ -49,12 +49,8 @@ func LoginAction(ctx engine.Context) {
 	hub := engine.AttachHub()
 	hub.RegisterClient <- ctx.Client
 
-	type Response struct {
-		Name  string
-		Names []string
-	}
-
-	// ctx.String("登陆成功")
+	names := model.MultGetNames()
+	ctx.Mix(names)
 }
 
 // SayAction 说点什么
