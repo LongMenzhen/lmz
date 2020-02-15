@@ -14,13 +14,11 @@ func init() {
 	engine.Bind("welcome", ws.WelcomeAction)
 	engine.Bind("ping", ws.PingAction)
 	engine.Bind("login", ws.LoginAction)
-	engine.Bind("join-group", ws.JoinGroupAction)
 	engine.Bind("say", ws.SayAction)
 }
 
 // Route 注册路由
 func Route() {
 	http.HandleFunc("/ws", app.ServeWs)
-	http.HandleFunc("/group", app.BuildGroup)
 	http.HandleFunc("/register", app.Register)
 }

@@ -40,19 +40,15 @@ var clientID = ClientID{
 // 这里设计是1个客户端属于一个房间
 // 后续可以升级为 N 对 M  的设计
 type Client struct {
-	ID     int32
-	Groups map[*Group]bool // 客户端所属房间
-	Conn   *websocket.Conn // 客户端连接
-	Send   chan []byte     // 待发送给客户端的内容
-	Done   chan bool       // 是否连接已结束
+	ID   int32
+	Conn *websocket.Conn // 客户端连接
+	Send chan []byte     // 待发送给客户端的内容
+	Done chan bool       // 是否连接已结束
 }
 
 // ReadMessage 读消息
 func (c *Client) ReadMessage() {
 	defer func() {
-		for group := range c.Groups {
-			group.RemoveClient(c)
-		}
 		c.Conn.Close()
 	}()
 
@@ -107,12 +103,7 @@ func (c *Client) ReadMessage() {
 			close(noEvent)
 		case result := <-ctx.Response:
 			log.Println("<-result")
-			if nil != ctx.Group {
-				ctx.Group.Broadcast <- result
-			} else {
-				// 如果没有接收消息组，那么就将消息发送给自己
-				c.Send <- result
-			}
+			c.Send <- result
 			close(done)
 			close(noEvent)
 		}

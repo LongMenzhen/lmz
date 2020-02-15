@@ -27,7 +27,6 @@ func main() {
 
 		sc := redis.NewScript(string(bytea))
 		sha1 := sc.Load(rds).String()
-
 		sha1s[name] = sha1
 	}
 
