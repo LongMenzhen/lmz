@@ -88,7 +88,14 @@ export default {
                     this.contents.push(content)
                     break
                 case 'login':
-                    this.names.push(data['body']['name'])
+                    let names = data['body']['names']
+                    let name = data['body']['name']
+                    if (0 >= this.names.length) {
+                        this.names.push(name)
+                    } else {
+                        this.names = names
+                    }
+
                     break;
             }
         },

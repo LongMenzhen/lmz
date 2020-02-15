@@ -39,8 +39,8 @@ func LoginAction(ctx engine.Context) {
 
 	// 关联clientID 与 userID
 	clientID := ctx.Client.ID
-	clientUser := model.NewClientUser(clientID, user.ID)
-	if err := model.CreateClientUser(*clientUser); nil != err {
+	clientUser := model.NewUserClient(clientID, user.ID)
+	if err := model.CreateUserClient(*clientUser); nil != err {
 		logrus.Error("关联ws客户端id与顾客id失败" + err.Error())
 		ctx.Error("登陆失败")
 		return
@@ -49,7 +49,10 @@ func LoginAction(ctx engine.Context) {
 	hub := engine.AttachHub()
 	hub.RegisterClient <- ctx.Client
 
-	names := model.MultGetNames()
+	names := map[string]interface{}{
+		"names": model.MultGetNames(),
+		"name":  user.Username,
+	}
 	ctx.Mix(names)
 }
 
