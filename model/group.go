@@ -18,7 +18,8 @@ type GroupID int32
 
 // Group 组
 type Group struct {
-	ID GroupID `json:"id" msgpack:"id"`
+	ID        GroupID `json:"id" msgpack:"id"`
+	CreatorID UserID  `json:"creator_id" msgpack:"creator_id"`
 }
 
 // TableName 返回记录Redis 的key
@@ -67,14 +68,15 @@ func CreateGroup(group Group) error {
 }
 
 // NewGroup 创建新的组对象
-func NewGroup() *Group {
+func NewGroup(user *User) *Group {
 	return &Group{
-		ID: newGroupID(),
+		ID:        newGroupID(),
+		CreatorID: user.ID,
 	}
 }
 
 // GroupIDs 返回组集合
-type GroupIDs []int32
+type GroupIDs []GroupID
 
 // TableName 返回组集合对应Redis key
 func (GroupIDs) TableName() string {
@@ -82,7 +84,7 @@ func (GroupIDs) TableName() string {
 }
 
 // GroupUsers 组下关联用户
-type GroupUsers []int32
+type GroupUsers []UserID
 
 // TableName 返回具体组下的用户集合key
 func (GroupUsers) TableName(groupID GroupID) string {
