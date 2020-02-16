@@ -15,7 +15,7 @@ var (
 // 各个客户端在选择连接组的时候，携带 group_id
 // 仓库只能够初始化一次，所以要设计为单例
 type Hub struct {
-	Clients    map[int32]*Client
+	Clients    map[ClientID]*Client
 	Register   chan *Client
 	Unregister chan *Client
 	Broadcast  chan []byte
@@ -57,7 +57,7 @@ func (h *Hub) Run() {
 func AttachHub() *Hub {
 	onceFunc := func() {
 		hub = &Hub{
-			Clients:    make(map[int32]*Client),
+			Clients:    make(map[ClientID]*Client),
 			Register:   make(chan *Client),
 			Unregister: make(chan *Client),
 			Broadcast:  make(chan []byte),

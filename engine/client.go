@@ -25,13 +25,16 @@ var Upgrader = websocket.Upgrader{
 	},
 }
 
-// ClientID 这里需要考虑并发问题，所以要进行锁操作
-type ClientID struct {
-	ID int32
+// ClientID 客户端id
+type ClientID int32
+
+// RwClientID 这里需要考虑并发问题，所以要进行锁操作
+type RwClientID struct {
+	ID ClientID
 	m  *sync.RWMutex
 }
 
-var clientID = ClientID{
+var newClientID = RwClientID{
 	ID: 0,
 	m:  &sync.RWMutex{},
 }
@@ -40,7 +43,7 @@ var clientID = ClientID{
 // 这里设计是1个客户端属于一个房间
 // 后续可以升级为 N 对 M  的设计
 type Client struct {
-	ID   int32
+	ID   ClientID
 	Conn *websocket.Conn // 客户端连接
 	Send chan []byte     // 待发送给客户端的内容
 	Done chan bool       // 是否连接已结束
@@ -149,7 +152,7 @@ func (c *Client) WriteMessage() {
 
 // NewClient 创建新的客户端连接
 func NewClient(conn *websocket.Conn) *Client {
-	id := IncrClientID()
+	id := IncrRwClientID()
 	client := &Client{
 		ID:   id,
 		Conn: conn,
@@ -164,11 +167,11 @@ func NewClient(conn *websocket.Conn) *Client {
 	return client
 }
 
-// IncrClientID 自增客户端id
-func IncrClientID() int32 {
-	clientID.m.Lock()
-	defer clientID.m.Unlock()
-	clientID.ID++
+// IncrRwClientID 自增客户端id
+func IncrRwClientID() ClientID {
+	newClientID.m.Lock()
+	defer newClientID.m.Unlock()
+	newClientID.ID++
 
-	return clientID.ID
+	return newClientID.ID
 }

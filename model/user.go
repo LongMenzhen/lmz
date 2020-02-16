@@ -6,26 +6,29 @@ import (
 	"github.com/vmihailenco/msgpack/v4"
 )
 
+// UserID 用户id
+type UserID int32
+
 // users 存储所有注册用户的id [1, 2, 3, 4, 5, 6]
 // user:1 存储具体用户的基本信息;对应结构体 User
 
 // NewUserID 返回自增的最新UserID
-func NewUserID() int32 {
+func NewUserID() UserID {
 	key := "userid_seq"
 	number, _ := rds.Incr(key).Result()
 
-	return int32(number)
+	return UserID(number)
 }
 
 // User 登陆用户
 type User struct {
-	ID       int32  `json:"id"`
-	Username string `json:"username"`
-	Password string `json:"-"`
+	ID       UserID `json:"id" msgpack:"id"`
+	Username string `json:"username" msgpack:"username"`
+	Password string `json:"-" msgpack:"password"`
 }
 
 // TableName 返回对应Redis存储的Key
-func (User) TableName(id int32) string {
+func (User) TableName(id UserID) string {
 	return fmt.Sprintf("user:%d", int(id))
 }
 
@@ -81,7 +84,7 @@ func NewUser(username, password string) *User {
 
 // UserIDs 用户集合
 // 在Redis中存储为集合存储，存储所有的UserID
-type UserIDs []int32
+type UserIDs []UserID
 
 // TableName 返回对应Redis存储的Key
 func (UserIDs) TableName() string {

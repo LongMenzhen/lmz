@@ -6,21 +6,39 @@ import (
 	"github.com/vmihailenco/msgpack/v4"
 )
 
-func newGroupID() int32 {
+func newGroupID() GroupID {
 	key := "groupid_seq"
 	id := rds.Incr(key).Val()
 
-	return int32(id)
+	return GroupID(id)
 }
+
+// GroupID 组id
+type GroupID int32
 
 // Group 组
 type Group struct {
-	ID int32 `json:"id"`
+	ID GroupID `json:"id" msgpack:"id"`
 }
 
 // TableName 返回记录Redis 的key
-func (Group) TableName(id int32) string {
+func (Group) TableName(id GroupID) string {
 	return fmt.Sprintf("group:%d", int(id))
+}
+
+// MakeGroup 根据id 查询Redis返回组结构体
+func (g *Group) MakeGroup() error {
+	msg, err := rds.Get(g.TableName(g.ID)).Bytes()
+	if nil != err {
+		return ErrGroupNotFound{}
+	}
+
+	err = msgpack.Unmarshal(msg, g)
+	if nil != err {
+		return err
+	}
+
+	return nil
 }
 
 // CreateGroup 创建组
@@ -61,4 +79,23 @@ type GroupIDs []int32
 // TableName 返回组集合对应Redis key
 func (GroupIDs) TableName() string {
 	return "groupids"
+}
+
+// GroupUsers 组下关联用户
+type GroupUsers []int32
+
+// TableName 返回具体组下的用户集合key
+func (GroupUsers) TableName(groupID GroupID) string {
+	return fmt.Sprintf("group:users:%d", int(groupID))
+}
+
+// AddUserToGroup 将用户加入到组
+func AddUserToGroup(user *User, group *Group) error {
+	key := GroupUsers{}.TableName(group.ID)
+	err := rds.SAdd(key, user.ID).Err()
+	if nil != err {
+		return err
+	}
+
+	return nil
 }
