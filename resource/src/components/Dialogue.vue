@@ -1,9 +1,9 @@
 <template>
     <div class="main">
         <div class="top">
-            <label>账号： </label><input v-model="user_id" />
-            <lable>密码： </lable><input v-model="password" />
-            <button @click="login">登陆</button><br/>
+            账号： <input v-model="user_id" />
+            密码： <input v-model="password" />
+            <button @click="login">登陆</button>
             <input v-model="group_name" />
             <button @click="createGroup">创建消息组</button>
         </div>
@@ -24,7 +24,12 @@
 
         <!--右边-->
         <div class="right">
-            <div class="name" v-for="name in names">{{name}}</div>
+            <div class="group_list">
+                <div class="item" v-for="group in groups">{{group.name}}</div>
+            </div>
+            <div class="name_list">
+                <div class="item" v-for="name in names">{{name}}</div>
+            </div>
         </div>
     </div>
 </template>
@@ -39,7 +44,10 @@ export default {
             user_id: '',
             password: '',
             group_name: '',
+
+            groups: [],
             names: [],
+            
             input: '',
             websock: null,
             contents: []
@@ -67,11 +75,20 @@ export default {
             this.input = ''
         },
         createGroup: function() {
+            if (0 >= this.group_name.length) {
+                alert("输入消息组名")
+                return
+            }
+            if (! this.websock) {
+                alert("请连接后再创建")
+                return
+            }
             let action = {"event": "create-group", "body": {"name": this.group_name}}
-            websocketSend(JSON.stringify(action))
+            this.websocketSend(JSON.stringify(action))
         },
         getGroups: function() {
-            
+            let action = {"event": "groups", "body": {}}
+            this.websocketSend(JSON.stringify(action))
         },
         initWebsocket() {
             const wsuri = 'ws://127.0.0.1:8000/ws';
@@ -100,15 +117,14 @@ export default {
                     this.contents.push(content)
                     break
                 case 'login':
-                    let names = data['body']['names']
-                    let name = data['body']['name']
-                    if (0 >= this.names.length) {
-                        this.names.push(name)
-                    } else {
-                        this.names = names
-                    }
-
-                    break;
+                    let groups = data['body']
+                    this.groups = groups
+                    break
+                case 'create-group':
+                    let group = data['body']
+                    console.log(this.groups, group)
+                    this.groups.push(group)
+                    break
             }
         },
         websocketSend(Data) {
@@ -146,7 +162,7 @@ export default {
     height: 768px;
 }
 
-.right .name {
+.right .item {
     border: 1px solid;
     text-align: right;
 }

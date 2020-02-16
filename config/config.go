@@ -29,7 +29,8 @@ type redisSetting struct {
 
 // luasSetting lua操作Redis的脚本
 type luasSetting struct {
-	MultGetNames string `yaml:"mult_get_names"`
+	MultGetGroupNames string `yaml:"mult_get_group_names"`
+	MultGroups        string `yaml:"mult_groups"`
 }
 
 func init() {

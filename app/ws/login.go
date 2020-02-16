@@ -46,15 +46,13 @@ func LoginAction(ctx engine.Context) {
 
 	hub := engine.AttachHub()
 	hub.Register <- ctx.Sock
-	names := map[string]interface{}{
-		"names": model.MultGetNames(),
-		"name":  user.Username,
-	}
 
 	// 将登陆用户与socket连接关联
 	model.AddUserSock(user.ID, ctx.Sock)
 
-	ctx.Mix(names)
+	// 登陆后返回所有可用的消息组
+	groups := model.MultGroups()
+	ctx.Mix(groups)
 }
 
 // JoinGroup 加入组

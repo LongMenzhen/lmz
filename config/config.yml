@@ -7,4 +7,5 @@ redis:
   port: 6379
 
 luas:
-  mult_get_names: 6fe2dd2518b4e5e0da93b7f994ff8e46a7c2f4b5
+  mult_get_group_names: 0d5d149bd1bdfe9f970fee6a96f99589fa930985
+  mult_groups: 7e2e0f8b9d35b1c0a446180cb03716fe72fbbf1f

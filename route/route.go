@@ -15,6 +15,7 @@ func init() {
 	engine.Bind("ping", ws.PingAction)
 	engine.Bind("login", ws.LoginAction)
 	engine.Bind("create-group", ws.CreateGroup)
+	engine.Bind("groups", ws.GetGroups)
 	engine.Bind("join-group", ws.JoinGroup)
 	engine.Bind("say", ws.SayAction)
 }

@@ -2,7 +2,6 @@ package ws
 
 import (
 	"encoding/json"
-	"strconv"
 
 	"github.com/cyrnicolase/lmz/engine"
 	"github.com/cyrnicolase/lmz/model"
@@ -30,10 +29,11 @@ func CreateGroup(ctx engine.Context) {
 		return
 	}
 
-	ctx.String("创建组成功:" + strconv.Itoa(int(group.ID)))
+	ctx.Mix(group)
 }
 
 // GetGroups 返回消息组
 func GetGroups(ctx engine.Context) {
-
+	groups := model.MultGroups()
+	ctx.Mix(groups)
 }

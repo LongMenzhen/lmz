@@ -3,6 +3,8 @@ package model
 import (
 	"fmt"
 
+	"github.com/cyrnicolase/lmz/config"
+	"github.com/sirupsen/logrus"
 	"github.com/vmihailenco/msgpack/v4"
 )
 
@@ -66,6 +68,28 @@ func CreateGroup(group Group) error {
 	}
 
 	return nil
+}
+
+// MultGroups 获取所有的组对象
+func MultGroups() []Group {
+	result, err := rds.EvalSha(config.Config.Luas.MultGroups, []string{GroupIDs{}.TableName()}, nil).Result()
+	if nil != err {
+		logrus.Error("读取Redis批量组信息失败" + err.Error())
+		return nil
+	}
+
+	groups, ret := []Group{}, result.([]interface{})
+	for _, msg := range ret {
+		data := msg.(string)
+		var group Group
+		if err := msgpack.Unmarshal([]byte(data), &group); nil != err {
+			continue
+		}
+
+		groups = append(groups, group)
+	}
+
+	return groups
 }
 
 // NewGroup 创建新的组对象

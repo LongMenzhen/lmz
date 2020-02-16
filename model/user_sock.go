@@ -3,7 +3,6 @@ package model
 import (
 	"fmt"
 
-	"github.com/cyrnicolase/lmz/config"
 	"github.com/cyrnicolase/lmz/engine"
 )
 
@@ -45,7 +44,7 @@ func MakeUserBySockID(cid engine.SockID) (*User, error) {
 }
 
 // UserSocks 在线客户端连接
-type UserSocks []int32
+type UserSocks []UserID
 
 // TableName 返回Redis key
 func (UserSocks) TableName() string {
@@ -60,7 +59,7 @@ func CreateUserSock(uc UserSock) error {
 	if nil != err {
 		return err
 	}
-	pipe.SAdd(UserSocks{}.TableName(), uc.SockID)
+	pipe.SAdd(UserSocks{}.TableName(), int32(uc.SockID))
 	_, err = pipe.Exec()
 	if nil != err {
 		return err
@@ -69,14 +68,14 @@ func CreateUserSock(uc UserSock) error {
 	return nil
 }
 
-// MultGetNames 返回当前登录的所有用户名
-func MultGetNames() []string {
-	ret, _ := rds.EvalSha(config.Config.Luas.MultGetNames, []string{UserSocks{}.TableName()}, nil).Result()
-	names, ins := []string{}, ret.([]interface{})
+// // MultGetNames 返回当前登录的所有用户名
+// func MultGetNames() []string {
+// 	ret, _ := rds.EvalSha(config.Config.Luas.MultGetNames, []string{UserSocks{}.TableName()}, nil).Result()
+// 	names, ins := []string{}, ret.([]interface{})
 
-	for _, inter := range ins {
-		names = append(names, inter.(string))
-	}
+// 	for _, inter := range ins {
+// 		names = append(names, inter.(string))
+// 	}
 
-	return names
-}
+// 	return names
+// }
