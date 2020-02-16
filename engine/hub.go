@@ -15,22 +15,22 @@ var (
 // 各个客户端在选择连接组的时候，携带 group_id
 // 仓库只能够初始化一次，所以要设计为单例
 type Hub struct {
-	Clients    map[ClientID]*Client
-	Register   chan *Client
-	Unregister chan *Client
+	Socks      map[SockID]*Sock
+	Register   chan *Sock
+	Unregister chan *Sock
 	Broadcast  chan []byte
 }
 
-// AddClient 将客户端连接加入到仓库
-func (h *Hub) AddClient(client *Client) {
-	h.Clients[client.ID] = client
+// AddSock 将客户端连接加入到仓库
+func (h *Hub) AddSock(sock *Sock) {
+	h.Socks[sock.ID] = sock
 }
 
-// RemoveClient 从仓库中移除客户端
-func (h *Hub) RemoveClient(client *Client) {
-	if _, ok := h.Clients[client.ID]; ok {
-		client.Done <- true
-		delete(h.Clients, client.ID)
+// RemoveSock 从仓库中移除客户端
+func (h *Hub) RemoveSock(sock *Sock) {
+	if _, ok := h.Socks[sock.ID]; ok {
+		sock.Done <- true
+		delete(h.Socks, sock.ID)
 	}
 }
 
@@ -40,13 +40,13 @@ func (h *Hub) Run() {
 	go func() {
 		for {
 			select {
-			case client := <-h.Register:
-				h.AddClient(client)
-			case client := <-h.Unregister:
-				h.RemoveClient(client)
+			case sock := <-h.Register:
+				h.AddSock(sock)
+			case sock := <-h.Unregister:
+				h.RemoveSock(sock)
 			case message := <-h.Broadcast:
-				for _, client := range h.Clients {
-					client.Send <- message
+				for _, sock := range h.Socks {
+					sock.Send <- message
 				}
 			}
 		}
@@ -57,9 +57,9 @@ func (h *Hub) Run() {
 func AttachHub() *Hub {
 	onceFunc := func() {
 		hub = &Hub{
-			Clients:    make(map[ClientID]*Client),
-			Register:   make(chan *Client),
-			Unregister: make(chan *Client),
+			Socks:      make(map[SockID]*Sock),
+			Register:   make(chan *Sock),
+			Unregister: make(chan *Sock),
 			Broadcast:  make(chan []byte),
 		}
 	}

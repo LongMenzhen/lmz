@@ -10,7 +10,7 @@ import (
 
 // CreateGroup 创建组
 func CreateGroup(ctx engine.Context) {
-	user, _ := model.MakeUserByClientID(ctx.Client.ID)
+	user, _ := model.MakeUserBySockID(ctx.Sock.ID)
 	group := model.NewGroup(user)
 	if err := model.CreateGroup(*group); nil != err {
 		logrus.Error("创建组失败")

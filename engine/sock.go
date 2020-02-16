@@ -25,32 +25,32 @@ var Upgrader = websocket.Upgrader{
 	},
 }
 
-// ClientID 客户端id
-type ClientID int32
+// SockID 客户端id
+type SockID int32
 
-// RwClientID 这里需要考虑并发问题，所以要进行锁操作
-type RwClientID struct {
-	ID ClientID
+// RwSockID 这里需要考虑并发问题，所以要进行锁操作
+type RwSockID struct {
+	ID SockID
 	m  *sync.RWMutex
 }
 
-var newClientID = RwClientID{
+var newSockID = RwSockID{
 	ID: 0,
 	m:  &sync.RWMutex{},
 }
 
-// Client 服务端注册客户端结构体
+// Sock 服务端注册客户端结构体
 // 这里设计是1个客户端属于一个房间
 // 后续可以升级为 N 对 M  的设计
-type Client struct {
-	ID   ClientID
+type Sock struct {
+	ID   SockID
 	Conn *websocket.Conn // 客户端连接
 	Send chan []byte     // 待发送给客户端的内容
 	Done chan bool       // 是否连接已结束
 }
 
 // ReadMessage 读消息
-func (c *Client) ReadMessage() {
+func (c *Sock) ReadMessage() {
 	defer func() {
 		c.Conn.Close()
 	}()
@@ -114,7 +114,7 @@ func (c *Client) ReadMessage() {
 }
 
 // WriteMessage 发消息
-func (c *Client) WriteMessage() {
+func (c *Sock) WriteMessage() {
 	tick := time.NewTicker(time.Second)
 	defer func() {
 		tick.Stop()
@@ -150,10 +150,10 @@ func (c *Client) WriteMessage() {
 	}
 }
 
-// NewClient 创建新的客户端连接
-func NewClient(conn *websocket.Conn) *Client {
-	id := IncrRwClientID()
-	client := &Client{
+// NewSock 创建新的客户端连接
+func NewSock(conn *websocket.Conn) *Sock {
+	id := IncrRwSockID()
+	client := &Sock{
 		ID:   id,
 		Conn: conn,
 		Send: make(chan []byte),
@@ -162,16 +162,16 @@ func NewClient(conn *websocket.Conn) *Client {
 
 	// 如果没有登陆，就不能注册进入hub中
 	// hub := AttachHub()
-	// hub.RegisterClient <- client // 注册客户端
+	// hub.RegisterSock <- client // 注册客户端
 
 	return client
 }
 
-// IncrRwClientID 自增客户端id
-func IncrRwClientID() ClientID {
-	newClientID.m.Lock()
-	defer newClientID.m.Unlock()
-	newClientID.ID++
+// IncrRwSockID 自增客户端id
+func IncrRwSockID() SockID {
+	newSockID.m.Lock()
+	defer newSockID.m.Unlock()
+	newSockID.ID++
 
-	return newClientID.ID
+	return newSockID.ID
 }

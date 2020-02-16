@@ -36,23 +36,23 @@ func LoginAction(ctx engine.Context) {
 	}
 
 	// 关联clientID 与 userID
-	clientID := ctx.Client.ID
-	clientUser := model.NewUserClient(clientID, user.ID)
-	if err := model.CreateUserClient(*clientUser); nil != err {
+	clientID := ctx.Sock.ID
+	clientUser := model.NewUserSock(clientID, user.ID)
+	if err := model.CreateUserSock(*clientUser); nil != err {
 		logrus.Error("关联ws客户端id与顾客id失败" + err.Error())
 		ctx.Error("登陆失败")
 		return
 	}
 
 	hub := engine.AttachHub()
-	hub.Register <- ctx.Client
+	hub.Register <- ctx.Sock
 	names := map[string]interface{}{
 		"names": model.MultGetNames(),
 		"name":  user.Username,
 	}
 
 	// 将登陆用户与socket连接关联
-	model.AddUserClient(user.ID, ctx.Client)
+	model.AddUserSock(user.ID, ctx.Sock)
 
 	ctx.Mix(names)
 }
@@ -77,7 +77,7 @@ func JoinGroup(ctx engine.Context) {
 		return
 	}
 
-	user, _ := model.MakeUserByClientID(ctx.Client.ID)
+	user, _ := model.MakeUserBySockID(ctx.Sock.ID)
 	model.AddUserToGroup(user, group)
 
 	logrus.WithFields(map[string]interface{}{

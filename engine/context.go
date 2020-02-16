@@ -12,15 +12,15 @@ type Response struct {
 
 // Context 操作上下文
 type Context struct {
-	Client   *Client
+	Sock     *Sock
 	Request  Message
 	Response chan []byte
 }
 
 // NewContext 新生成Context结构体
-func NewContext(msg Message, client *Client) Context {
+func NewContext(msg Message, sock *Sock) Context {
 	return Context{
-		Client:   client,
+		Sock:     sock,
 		Request:  msg,
 		Response: make(chan []byte),
 	}
