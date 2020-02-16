@@ -19,6 +19,7 @@ type GroupID int32
 // Group 组
 type Group struct {
 	ID        GroupID `json:"id" msgpack:"id"`
+	Name      string  `json:"name" msgpack:"name"`
 	CreatorID UserID  `json:"creator_id" msgpack:"creator_id"`
 }
 
@@ -68,9 +69,10 @@ func CreateGroup(group Group) error {
 }
 
 // NewGroup 创建新的组对象
-func NewGroup(user *User) *Group {
+func NewGroup(user *User, name string) *Group {
 	return &Group{
 		ID:        newGroupID(),
+		Name:      name,
 		CreatorID: user.ID,
 	}
 }

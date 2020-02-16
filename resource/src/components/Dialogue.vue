@@ -3,7 +3,9 @@
         <div class="top">
             <label>账号： </label><input v-model="user_id" />
             <lable>密码： </lable><input v-model="password" />
-            <button @click="login">登陆</button>
+            <button @click="login">登陆</button><br/>
+            <input v-model="group_name" />
+            <button @click="createGroup">创建消息组</button>
         </div>
         <div class="left">
             <!-- 内容框 -->
@@ -28,12 +30,15 @@
 </template>
 
 <script>
+import "axios";
+
 export default {
     name: 'dialogue',
     data () {
         return {
             user_id: '',
             password: '',
+            group_name: '',
             names: [],
             input: '',
             websock: null,
@@ -57,9 +62,16 @@ export default {
                 alert("输入内容不能为空")
                 return
             }
-            let data = {"event": "say", "group_id": 1, "body": {"content": this.input}}
+            let data = {"event": "say", "body": {"content": this.input}}
             this.websocketSend(JSON.stringify(data))
             this.input = ''
+        },
+        createGroup: function() {
+            let action = {"event": "create-group", "body": {"name": this.group_name}}
+            websocketSend(JSON.stringify(action))
+        },
+        getGroups: function() {
+            
         },
         initWebsocket() {
             const wsuri = 'ws://127.0.0.1:8000/ws';
