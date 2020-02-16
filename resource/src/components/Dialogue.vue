@@ -10,7 +10,7 @@
         <div class="left">
             <!-- 内容框 -->
             <div class="content">
-                <div v-for="content in contents">{{content}}</div>
+                <div v-for="(content,index) in contents" :key="index">{{content}}</div>
             </div>
 
             <!-- 操作框 -->
@@ -25,10 +25,11 @@
         <!--右边-->
         <div class="right">
             <div class="group_list">
-                <div class="item" v-for="group in groups">{{group.name}}</div>
+                <div><b>消息组</b></div>
+                <div class="item" v-for="group in groups" :key="group.id">{{group.name}}</div>
             </div>
             <div class="name_list">
-                <div class="item" v-for="name in names">{{name}}</div>
+                <div class="item" v-for="(name, index) in names" :key="index">{{name}}</div>
             </div>
         </div>
     </div>
@@ -122,7 +123,6 @@ export default {
                     break
                 case 'create-group':
                     let group = data['body']
-                    console.log(this.groups, group)
                     this.groups.push(group)
                     break
             }
